@@ -14,14 +14,13 @@ class ExampleTest extends TestCase
         $this->assertTrue(true);
     }
 
-    public function test_int_addition_result(): void 
+    public function test_int_addition_result(): void
     {
-        $controller=new OperationsController;
+        $controller = new OperationsController;
 
+        $this->assertIsInt($controller->addition(a: 5, b: 6));
+        $this->assertNotNull($controller->addition(a: 5, b: 6));
 
-        $this->assertIsInt($controller->addition(a:5,b:6));
-        $this->assertNotNull($controller->addition(a:5, b:6));
-        
-        $this->assertGreaterThan(minimum:5, $controller->addition(a:5,b:6));
-    } 
+        $this->assertGreaterThan(minimum: 5, $controller->addition(a: 5, b: 6));
+    }
 }
