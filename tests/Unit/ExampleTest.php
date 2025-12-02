@@ -2,8 +2,8 @@
 
 namespace Tests\Unit;
 
-use PHPUnit\Framework\TestCase;
 use App\Http\Controllers\OperationsController;
+use PHPUnit\Framework\TestCase;
 
 class ExampleTest extends TestCase
 {
@@ -19,7 +19,6 @@ class ExampleTest extends TestCase
         $this->assertIsInt($controller->addition(a: 5, b: 6));
         $this->assertNotNull($controller->addition(a: 5, b: 6));
 
-       
         $this->assertGreaterThan(minimum: 5, $controller->addition(a: 5, b: 6));
     }
 }
