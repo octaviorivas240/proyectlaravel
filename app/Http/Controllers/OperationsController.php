@@ -1,5 +1,6 @@
 <?php
 
+#operacion de controles
 namespace App\Http\Controllers;
 
 class OperationsController extends Controller
