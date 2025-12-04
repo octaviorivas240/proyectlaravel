@@ -18,19 +18,28 @@ jobs:
         uses: shivammathur/setup-php@v2
         with:
           php-version: '8.3'
-          extensions: mbstring, bcmath, intl, sqlite3, redis, zip
+          extensions: mbstring, bcmath, intl, sqlite3, redis, zip, exif, pcntl
           tools: composer
 
       - name: Composer install (production)
-        run: composer install --optimize-autoloader --no-dev --no-progress --prefer-dist
+        run: composer install --optimize-autoloader --no-dev --no-interaction --prefer-dist
 
-      - name: Laravel production setup
+      - name: Laravel production setup + Azure fixes (NO cache path error)
         run: |
           php artisan key:generate --force
+          php artisan storage:link || echo "Storage link already exists"
+
+          # Cachear todo para máxima velocidad
           php artisan config:cache
           php artisan route:cache
           php artisan view:cache
-          php artisan storage:link || echo "Storage link already exists"
+
+          # FIX DEFINITIVO para Azure: permisos + carpetas de cache
+          mkdir -p storage/framework/cache/data
+          mkdir -p storage/framework/sessions
+          mkdir -p storage/framework/views
+          mkdir -p storage/logs
+          chmod -R 777 storage bootstrap/cache || true
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
