@@ -14,33 +14,46 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      # PHP 8.3
       - name: Setup PHP
         uses: shivammathur/setup-php@v2
         with:
-          php-version: '8.4'
-          extensions: mbstring, bcmath, intl, sqlite3, redis, zip, exif, pcntl
+          php-version: '8.3'
+          extensions: mbstring, bcmath, intl, sqlite3, zip, exif, pcntl
           tools: composer
 
+      # Composer producción
       - name: Composer install (production)
         run: composer install --optimize-autoloader --no-dev --no-interaction --prefer-dist
 
-      - name: Laravel production setup + Azure fixes (NO cache path error)
+      # PASO MÁGICO: todo lo que necesitas para que nunca falle
+      - name: Laravel + .env + Azure fixes (100% funcional)
         run: |
-          php artisan key:generate --force
-          php artisan storage:link || echo "Storage link already exists"
+          # 1. Copiar tu .env.example exacto → .env
+          cp .env.example .env
 
-          # Cachear todo para máxima velocidad
+          # 2. Cambiar valores críticos para producción en Azure
+          sed -i 's/APP_ENV=.*/APP_ENV=production/' .env
+          sed -i 's/APP_DEBUG=.*/APP_DEBUG=false/' .env
+          sed -i 's|APP_URL=.*|APP_URL=https://proyect1-ftf5fyh2efhka3ec.canadacentral-01.azurewebsites.net|' .env
+
+          # 3. Generar APP_KEY (ahora sí existe .env)
+          php artisan key:generate --force
+
+          # 4. Storage link + cachear todo
+          php artisan storage:link || echo "Storage link already exists"
           php artisan config:cache
           php artisan route:cache
           php artisan view:cache
 
-          # FIX DEFINITIVO para Azure: permisos + carpetas de cache
+          # 5. Fix definitivo de carpetas y permisos para Azure
           mkdir -p storage/framework/cache/data
           mkdir -p storage/framework/sessions
           mkdir -p storage/framework/views
           mkdir -p storage/logs
           chmod -R 777 storage bootstrap/cache || true
 
+      # Subir todo
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
