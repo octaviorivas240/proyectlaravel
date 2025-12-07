@@ -3,26 +3,78 @@
 namespace Tests\Unit;
 
 use App\Http\Controllers\OperationsController;
-use PHPUnit\Framework\TestCase;
+use Tests\TestCase;
 
 class ExampleTest extends TestCase
 {
-    /**
-     * A basic test example 1.
-     */
     public function test_that_true_is_true(): void
     {
         $this->assertTrue(true);
     }
 
-    public function test_int_addition_result(): void
+    /**
+     * Pruebas COMPLEJAS del método calcularVenta()
+     */
+    public function test_calcular_venta(): void
     {
-        $controller = new OperationsController;
+        $controller = new OperationsController();
 
-        $this->assertIsInt($controller->addition(5, 6));
+        $resultado = $controller->calcularVenta(
+            precioUnitario: 100.0,
+            cantidad: 2,
+            impuestoPorcentaje: 16,
+            descuentoPorcentaje: 10
+        );
 
-        $this->assertNotNull($controller->addition(5, 6));
+        // 1. Que retorne un array con claves esperadas
+        $this->assertIsArray($resultado);
+        $this->assertArrayHasKey('subtotal', $resultado);
+        $this->assertArrayHasKey('descuento', $resultado);
+        $this->assertArrayHasKey('subtotal_final', $resultado);
+        $this->assertArrayHasKey('impuesto', $resultado);
+        $this->assertArrayHasKey('total', $resultado);
 
-        $this->assertGreaterThan(5, $controller->addition(5, 6));
+        // 2. Validar cálculos exactos
+        $this->assertSame(200.0, $resultado['subtotal']);
+        $this->assertSame(20.0, $resultado['descuento']);
+        $this->assertSame(180.0, $resultado['subtotal_final']);
+        $this->assertSame(28.8, $resultado['impuesto']);
+        $this->assertSame(208.8, $resultado['total']);
+
+        // 3. Validar que todos los valores sean numéricos
+        foreach ($resultado as $valor) {
+            $this->assertIsFloat($valor);
+        }
+    }
+
+    /**
+     * Prueba casos extremos y límites.
+     */
+    public function test_calcular_venta_sin_impuestos_ni_descuento(): void
+    {
+        $controller = new OperationsController();
+
+        $resultado = $controller->calcularVenta(50.0, 3);
+
+        $this->assertSame(150.0, $resultado['subtotal']);
+        $this->assertSame(0.0, $resultado['descuento']);
+        $this->assertSame(150.0, $resultado['subtotal_final']);
+        $this->assertSame(0.0, $resultado['impuesto']);
+        $this->assertSame(150.0, $resultado['total']);
+    }
+
+    /**
+     * Prueba manejo de errores.
+     */
+    public function test_calcular_venta_datos_invalidos(): void
+    {
+        $controller = new OperationsController();
+
+        $this->expectException(\InvalidArgumentException::class);
+
+        $controller->calcularVenta(
+            precioUnitario: -10,
+            cantidad: 0
+        );
     }
 }
