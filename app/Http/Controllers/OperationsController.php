@@ -12,7 +12,8 @@ class OperationsController extends Controller
     public function calcularIMC(float $peso, float $altura): float
     {
         if ($peso <= 0 || $altura <= 0) {
-            throw new \InvalidArgumentException("La altura y el peso deben ser mayor que cero.");
+            throw new \InvalidArgumentException("La altura y el peso deben ser 
+            mayor que cero.");
         }
 
         $imc = $peso / ($altura * $altura);
